@@ -215,6 +215,10 @@ GfxWindowBackendSDL2::~GfxWindowBackendSDL2() {
 }
 
 void GfxWindowBackendSDL2::SetFullscreenImpl(bool on, bool call_callback) {
+#ifdef __ANDROID__
+    // Always fullscreen on Android: that is what keeps the system bars hidden (immersive mode).
+    on = true;
+#endif
     if (mFullScreen == on) {
         return;
     }
@@ -375,6 +379,9 @@ void GfxWindowBackendSDL2::Init(const char* gameName, const char* gfxApiName, bo
 
 #ifdef __IOS__
     Uint32 flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN;
+#elif defined(__ANDROID__)
+    // Fullscreen makes SDL hide the status and navigation bars (swipe from an edge to show them).
+    Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #else
     Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
@@ -386,6 +393,9 @@ void GfxWindowBackendSDL2::Init(const char* gameName, const char* gfxApiName, bo
     }
 
     mWnd = SDL_CreateWindow(title, posX, posY, mWindowWidth, mWindowHeight, flags);
+#ifdef __ANDROID__
+    mFullScreen = true;
+#endif
 #ifdef _WIN32
     // Get Windows window handle and use it to subclass the window procedure.
     // Needed to circumvent SDLs DPI scaling problems under windows (original does only scale *sometimes*).

@@ -288,7 +288,9 @@ std::string GfxRenderingAPIOGL::BuildFsShader(const CCFeatures& cc_features) {
         { "texture", "texture" },
         { "vOutColor", "vOutColor" },
 #elif defined(USE_OPENGLES)
-        { "GLSL_VERSION", "#version 300 es\nprecision mediump float;" },
+        // highp: N64 texture coordinates are computed in texel space, and mediump (true fp16 on
+        // Adreno/Mali) smears sampling and clamping into garbled textures and unreadable text.
+        { "GLSL_VERSION", "#version 300 es\nprecision highp float;\nprecision highp int;\nprecision highp sampler2D;" },
         { "attr", "in" },
         { "opengles", true },
         { "core_opengl", false },
